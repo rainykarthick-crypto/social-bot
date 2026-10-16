@@ -1,6 +1,6 @@
 # Social Media Lead Bot + Multi-Account Manager + Krayin CRM Orchestration
 
-[![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml)
+[![CI](https://github.com/rainykarthick-crypto/social-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/rainykarthick-crypto/social-bot/actions/workflows/ci.yml)
 [![PHP 8.3+](https://img.shields.io/badge/php-8.3%2B-777bb4.svg)](https://www.php.net/)
 [![MySQL 8](https://img.shields.io/badge/MySQL-8.0-4479a1.svg)](https://dev.mysql.com/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -60,7 +60,7 @@ convenience stack; the runtime needs only PHP 8.3+, MySQL 8 and the Composer
 dependencies.
 
 ```bash
-git clone https://github.com/<OWNER>/<REPO>.git social-bot && cd social-bot
+git clone https://github.com/rainykarthick-crypto/social-bot.git social-bot && cd social-bot
 composer install
 cp .env.example .env          # then fill in credentials (section 4)
 mysql -u root -p -e "CREATE DATABASE social_bot CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
