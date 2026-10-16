@@ -89,6 +89,68 @@ php worker.php --once
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
+#### Portable runtime — no installer, no admin, no Docker
+
+This is the exact setup the project was validated on: PHP 8.3.35 (NTS x64), MariaDB
+10.11.11 and Composer 2.10.3, all unpacked from zip archives into one directory. No
+services are installed and no administrator rights are needed.
+
+```powershell
+$rt = "$HOME\.social-bot-runtime"                 # any writable directory
+New-Item -ItemType Directory -Force -Path "$rt\php", "$rt\maria", "$rt\bin" | Out-Null
+
+# 1. PHP 8.3 NTS x64
+Invoke-WebRequest 'https://windows.php.net/downloads/releases/latest/php-8.3-nts-Win32-vs16-x64-latest.zip' -OutFile "$rt\php.zip"
+tar -xf "$rt\php.zip" -C "$rt\php"
+
+# 2. MariaDB (the winx64 .zip, not the MSI installer)
+Invoke-WebRequest 'https://archive.mariadb.org/mariadb-10.11.11/winx64-packages/mariadb-10.11.11-winx64.zip' -OutFile "$rt\maria.zip"
+tar -xf "$rt\maria.zip" -C "$rt\maria"
+
+# 3. Composer
+Invoke-WebRequest 'https://getcomposer.org/composer-stable.phar' -OutFile "$rt\bin\composer.phar"
+
+# 4. php.ini — only the extensions this application needs (bcmath/json/phar are built in)
+@'
+extension_dir = "ext"
+extension=curl
+extension=fileinfo
+extension=mbstring
+extension=openssl
+extension=pdo_mysql
+extension=pdo_sqlite
+extension=zip
+extension=intl
+memory_limit = 512M
+date.timezone = Asia/Kolkata
+'@ | Set-Content "$rt\php\php.ini"
+
+# 5. Create the data directory (no Windows service is registered)
+& "$rt\maria\mariadb-10.11.11-winx64\bin\mysql_install_db.exe" --datadir="$rt\mariadb-data" --port=3307
+
+# 6. Dependencies + schema
+$env:COMPOSER_PROCESS_TIMEOUT = 1800
+& "$rt\php\php.exe" "$rt\bin\composer.phar" install
+& "$rt\php\php.exe" migrate.php
+```
+
+Then start/stop everything with the bundled runner — it reads the database settings and
+`WEB_PORT` from `.env`, records PIDs under `storage/run/` and writes logs to `storage/logs/`:
+
+```powershell
+$env:SOCIAL_BOT_RUNTIME = $rt             # or: pwsh -File tools/local-stack.ps1 start -RuntimeRoot $rt
+pwsh -File tools/local-stack.ps1 start     # MariaDB + web server + queue worker
+pwsh -File tools/local-stack.ps1 status
+pwsh -File tools/local-stack.ps1 stop
+```
+
+To keep the stack running across logins, register those same commands as Task Scheduler
+entries (trigger: at logon) or add an `--env-file`-free `config` entry for your process
+manager of choice. `.env` defaults: `DB_HOST=127.0.0.1`, `DB_PORT=3307`, `WEB_PORT=8081`.
+
+MySQL 8 works identically — point `DB_*` at it and the same migrations apply (verified on
+MySQL 8.0 in CI and on MariaDB 10.11 natively).
+
 Scheduling without Docker is plain cron (7.2) or Task Scheduler on Windows.
 
 `composer.lock` is committed and `config.platform.php` is pinned to `8.3.0`, so the

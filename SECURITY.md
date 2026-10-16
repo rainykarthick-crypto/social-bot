@@ -12,7 +12,7 @@ Please **do not** disclose security issues in public issues, discussions or pull
 
 Use GitHub's private reporting instead:
 **Security → Advisories → Report a vulnerability**
-(`https://github.com/<OWNER>/<REPO>/security/advisories/new`).
+(`https://github.com/rainykarthick-crypto/social-bot/security/advisories/new`).
 
 If you cannot use that channel, email the maintainer listed in `composer.json` with:
 

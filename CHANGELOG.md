@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `tools/local-stack.ps1`: starts/stops/inspects the whole stack natively — MariaDB (or
+  MySQL), the PHP web server and the queue worker — with no Docker, no Windows service and
+  no administrator rights. Reads the database settings and `WEB_PORT` from `.env`, records
+  PIDs in `storage/run/` and logs to `storage/logs/`.
+- README section "Portable runtime — no installer, no admin, no Docker": the exact
+  zip-based PHP 8.3 + MariaDB 10.11 + Composer bootstrap this project is validated on.
+
 ### Planned
 
 - Vector-embedding retrieval behind `BrandVoiceRAG` (the lexical retriever is isolated behind `retrieve()`).
@@ -78,5 +87,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `tools/lint.php` syntax gate and a 29-check end-to-end smoke suite on in-memory SQLite.
 - Docker stack (worker, web, MySQL 8, Redis 7, optional Ollama) plus a GitHub Actions CI job.
 
-[Unreleased]: https://github.com/<OWNER>/<REPO>/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/<OWNER>/<REPO>/releases/tag/v1.0.0
+[Unreleased]: https://github.com/rainykarthick-crypto/social-bot/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/rainykarthick-crypto/social-bot/releases/tag/v1.0.0

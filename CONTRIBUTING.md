@@ -6,7 +6,7 @@ LLM APIs, CRMs and social platforms, so a few invariants matter more than style 
 ## Getting set up
 
 ```bash
-git clone https://github.com/<OWNER>/<REPO>.git
+git clone https://github.com/rainykarthick-crypto/social-bot.git
 cd social-bot
 composer install
 cp .env.example .env
