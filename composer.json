@@ -26,7 +26,7 @@
         "jbuncle/php-vadersentiment": "^1.0",
         "amirsarhang/instagram-php-sdk": "^4.0",
         "atymic/twitter": "^3.0",
-        "googleads/google-ads-php": "^27.0"
+        "googleads/google-ads-php": "^35.1"
     },
     "autoload": {
         "psr-4": {
