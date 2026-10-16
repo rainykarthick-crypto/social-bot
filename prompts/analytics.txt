@@ -1,0 +1,4 @@
+Summarize social media analytics. Return ONLY JSON:
+{"period":"...","total_leads":N,"qualified":N,"top_platform":"...",
+"top_intent":"...","sentiment_breakdown":{"positive":N,"neutral":N,"negative":N},
+"recommendation":"one actionable insight"}

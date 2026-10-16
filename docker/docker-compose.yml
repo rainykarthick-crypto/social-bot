@@ -1,0 +1,125 @@
+# Local, fully self-hosted stack for the social bot.
+#
+#   docker compose -f docker/docker-compose.yml up -d          # worker + web + mysql + redis
+#   docker compose -f docker/docker-compose.yml logs -f app    # worker output
+#   docker compose -f docker/docker-compose.yml run --rm app php migrate.php
+#   docker compose -f docker/docker-compose.yml run --rm app php tests/smoke.php
+#   docker compose -f docker/docker-compose.yml --profile llm up -d ollama
+#
+# Services: app = queue worker, web = dashboard + webhook routes, mysql, redis,
+# ollama (optional profile "llm").
+#
+# Host ports (chosen so they do not collide with a typical 8080/3306/6379 dev box):
+#   dashboard        ${WEB_PORT_FORWARD:-8081}   -> container 8080
+#   MySQL            ${DB_PORT_FORWARD:-3307}    -> container 3306
+#   Redis            ${REDIS_PORT_FORWARD:-6380} -> container 6379
+#   Ollama (profile llm) 11434
+#
+# Nested `up`/`run` commands read service variables from ../.env (env_file), but
+# `${...}` interpolation below is resolved by Compose from ITS OWN project
+# directory. To drive the ports from the project .env, pass it explicitly:
+#   docker compose --env-file .env -f docker/docker-compose.yml up -d web
+# or simply prefix the variable:  WEB_PORT_FORWARD=9090 docker compose ... up -d
+#
+# vendor/ lives in a named volume: bind-mounted vendor directories are extremely
+# slow to write on Windows/macOS, and this keeps the host tree clean.  Run
+# `composer install` on the host instead if you want vendor/ on disk.
+#
+# Krayin CRM and Mixpost are separate Laravel applications; point
+# KRAYIN_API_URL / MIXPOST_URL at them (see README) - they are not bundled here
+# to keep this file focused on the bot's own runtime dependencies.
+
+services:
+  # The queue worker: drains comment_queue, pushes leads to Krayin and retries
+  # publications.  One-off commands still work through `compose run --rm app ...`
+  # (which overrides this command).
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    restart: unless-stopped
+    volumes:
+      - ..:/app
+      - vendor:/app/vendor
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      DB_HOST: mysql
+      REDIS_HOST: redis
+      OLLAMA_URL: http://ollama:11434
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["php", "worker.php", "--daemon", "--max-runtime=0", "--verbose"]
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: ["--default-authentication-plugin=mysql_native_password", "--sql-mode=STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION"]
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-social_bot}
+      MYSQL_USER: ${DB_USER:-bot}
+      MYSQL_PASSWORD: ${DB_PASS:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootsecret}
+    ports:
+      - "${DB_PORT_FORWARD:-3307}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DB_ROOT_PASS:-rootsecret}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT_FORWARD:-6380}:6379"
+    volumes:
+      - redis-data:/data
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    profiles: ["llm"]
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    restart: unless-stopped
+    volumes:
+      - ..:/app
+      - vendor:/app/vendor
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      DB_HOST: mysql
+      REDIS_HOST: redis
+      OLLAMA_URL: http://ollama:11434
+      # php -S handles one request at a time unless it is told to fork workers.
+      PHP_CLI_SERVER_WORKERS: 4
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["php", "-S", "0.0.0.0:8080", "-t", "public", "public/router.php"]
+    ports:
+      - "${WEB_PORT_FORWARD:-8081}:8080"
+
+volumes:
+  mysql-data:
+  redis-data:
+  ollama-data:
+  vendor:

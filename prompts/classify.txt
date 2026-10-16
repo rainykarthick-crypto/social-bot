@@ -1,0 +1,19 @@
+Classify social media comments for lead qualification.
+Return ONLY valid JSON array. One object per comment in input order.
+
+Each object:
+{"intent":"purchase|pricing|availability|demo|support|complaint|spam|none",
+"score":0-100,"sentiment":"positive|neutral|negative",
+"is_lead":true|false,"priority":"P1|P2|P3",
+"summary":"one line","reply":"suggested response if lead else empty"}
+
+Rules:
+- purchase: wants to buy ("DM me","order","need this")
+- pricing: asks cost/discount/plan
+- availability: stock/location/shipping
+- demo: trial/consultation request
+- support: needs help with existing service
+- complaint: negative experience/refund
+- spam: promotional/repetitive/bot-like
+- none: general comment, no business signal
+Priority: P1 if score>=70 or intent=purchase; P2 if 40-69; P3 otherwise.

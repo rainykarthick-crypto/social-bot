@@ -1,0 +1,35 @@
+# Dependencies
+/vendor/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Runtime artefacts
+/storage/logs/
+/storage/cache/
+/storage/digests/
+/storage/*.log
+/storage/audit_status.json
+
+# Tooling
+.phpunit.result.cache
+.phpstan.cache
+.php-cs-fixer.cache
+/build/
+/coverage/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local compose overrides and backups
+docker-compose.override.yml
+*.sql.gz
+*.sql.bak

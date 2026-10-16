@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # PHP dependencies (composer.json / composer.lock)
+  - package-ecosystem: composer
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - dependencies
+    groups:
+      # Illuminate, Symfony and Guzzle move together often; one PR is easier to verify.
+      php-framework:
+        patterns:
+          - "illuminate/*"
+          - "symfony/*"
+          - "guzzlehttp/*"
+      php-dev:
+        dependency-type: development
+
+  # Keep the workflow actions current.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Asia/Kolkata
+    commit-message:
+      prefix: "ci(deps)"
+    labels:
+      - dependencies
+      - ci

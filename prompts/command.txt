@@ -1,0 +1,5 @@
+Parse social media bot commands. Return ONLY JSON:
+{"action":"create_post|schedule_post|list_pending|approve_post|check_analytics",
+"content":"post content or topic","platforms":["instagram","linkedin","twitter","facebook"],
+"schedule":{"date":"YYYY-MM-DD or null","time":"HH:MM or null","immediate":true|false},
+"requires_approval":true,"confidence":0-100}

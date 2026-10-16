@@ -1,0 +1,4 @@
+# Runtime directory: contents are generated (logs, cache, digest HTML).
+# bootstrap.php recreates the sub-directories automatically.
+*
+!.gitignore
